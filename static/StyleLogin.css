@@ -1,0 +1,31 @@
+body {
+    background-color: #1a1a1a;
+    color: white;
+    font-family: Arial, sans-serif;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+}
+.login-container {
+    display: flex;
+    align-items: center;
+}
+.login-container img {
+    width: 150px;
+    margin-right: 30px;
+}
+.form-control {
+    border-radius: 50px;
+    background-color: white;
+    color: black;
+}
+.form-group {
+    margin-bottom: 20px;
+}
+label {
+    display: block;
+    text-align: left;
+    margin-bottom: 5px;
+}
