@@ -26,9 +26,25 @@ def validar_dados(data, campos_obrigatorios):
 def home_page():
     return render_template('Login.html')
 
+#Rota para a pagina Login
+@app.route('/login', methods=['POST'])
+def login():
+    login = request.form.get('login')
+    password = request.form.get('password')
+    
+    # Aqui você pode adicionar a lógica de autenticação
+    if login == "admin" and password == "senha":  # Exemplo de autenticação
+        return redirect(url_for('cadastro_page'))  # Redireciona para a página de cadastro
+    else:
+        return "Login ou senha incorretos", 401  # Retorna erro se as credenciais estiverem erradas
+
+
 @app.route('/cadastro')
 def cadastro_page():
     return render_template('Cadastro.html')
+
+if __name__ == '__main__':
+    app.run(debug=True)
 
 # Rotas para Cotações
 @app.route('/cotações', methods=['POST'])
