@@ -1,6 +1,3 @@
-// Adicione as bibliotecas do Firebase ao seu app
-<script src="https://www.gstatic.com/firebasejs/11.2.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore-compat.js"></script>
 
 // Inicialize o Firebase
 const app = firebase.initializeApp(firebaseConfig);
@@ -27,6 +24,8 @@ db.collection("usuarios").add({
     console.error("Erro ao adicionar documento: ", error);
 });
 
+
+//Ler DB Usuario
 db.collection("usuarios").get().then((querySnapshot) => {
     querySnapshot.forEach((doc) => {
         console.log(`${doc.id} => ${doc.data()}`);
