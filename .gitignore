@@ -1,6 +1,7 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *$py.class
+.requirements.txt
 
 # C extensions
 *.so
@@ -127,9 +128,7 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-.vapp
-.env
-.venv
+vapp/
 env/
 venv/
 ENV/
@@ -163,3 +162,10 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+
+#firestore
+.runtimeconfig.json
+.firebase-debug.log
+.firebase-debug.*.log
+node_modules/
