@@ -1,16 +1,37 @@
+import logging
 from flask import Flask, request, jsonify, render_template, redirect, url_for
 from flask_sslify import SSLify
 import ssl
 import sqlite3
 from contextlib import closing
+from flask_cors import CORS
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user
+from models import db, User
+
+# Configuração de logging
+logging.basicConfig(level=logging.DEBUG)
 
 # Server configuration
 app = Flask(__name__)
-sslify = SSLify(app)
+CORS(app)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
+app.config['SECRET_KEY'] = 'your_secret_key'
+db.init_app(app)
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
+
+# Initialize Flask-Login
+login_manager = LoginManager()
+login_manager.init_app(app)
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 # Database connection function
 def get_db_connection():
-    conn = sqlite3.connect('database.db')  # Cambia 'database.db' por la ruta de tu base de datos
+    conn = sqlite3.connect('models.db')
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -21,21 +42,71 @@ def validar_dados(data, campos_obrigatorios):
             return False, f'{campo.capitalize()} é obrigatório'
     return True, None
 
-# Route for the home page (Login)
-@app.route('/', methods=['POST', 'GET'])
-def home_page():
-    return render_template('Login.html')
+# Initialize the database
+def init_db():
+    with closing(get_db_connection()) as conn:
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS usuarios (
+                id TEXT PRIMARY KEY,
+                nome TEXT NOT NULL
+            )
+        ''')
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS cotacoes (
+                id TEXT PRIMARY KEY,
+                valor REAL NOT NULL
+            )
+        ''')
+        conn.commit()
 
-# Route for logout
-@app.route('/logout')
+# Route for user Login
+@app.route('/', methods=['GET', 'POST'])
+def _page():
+    if request.method == 'POST':
+        # Log the incoming request headers
+        app.logger.debug(f'Request Headers: {request.headers}')  
+        
+        if request.content_type != 'application/json':
+            return jsonify({'error': 'Content-Type deve ser application/json'}), 415
+
+        # Handle user login
+        data = request.get_json()
+        user = User.query.filter_by(email=data['email']).first()
+        if user and user.check_password(data['password']):
+            login_user(user)
+            return jsonify(message='Login bem-sucedido', redirect_url='/home'), 200  # URL de redirecionamento
+        return jsonify(message='Credenciais inválidas'), 401
+
+    else:
+        # Render the login page
+        return render_template('Login.html')
+
+# Route for user logout
+@app.route('/logout', methods=['POST'])
+@login_required
 def logout():
-    # Implementar lógica de logout aquí
-    return redirect(url_for('home_page'))
+    logout_user()
+    return jsonify(message='Logout bem-sucedido'), 200
+
+#Route for the home
+@app.route('/home')
+def home_page():
+    return render_template('home.html')
 
 # Route for the registration page
 @app.route('/cadastro')
 def cadastro_page():
     return render_template('Cadastro.html')
+
+# Route for user registration
+@app.route('/register', methods=['POST'])
+def register():
+    data = request.get_json()
+    new_user = User(email=data['email'])
+    new_user.set_password(data['password'])
+    db.session.add(new_user)
+    db.session.commit()
+    return jsonify(message='Usuário registrado com sucesso'), 201
 
 # Route for adding quotes
 @app.route('/cotações', methods=['POST'])
@@ -60,7 +131,7 @@ def deletar_cotacao(id):
         conn.commit()
     return '', 204
 
-# Route for adding users
+# # Route for adding users
 @app.route('/usuarios', methods=['POST'])
 def adicionar_usuario():
     data = request.json
@@ -102,27 +173,16 @@ def deletar_usuario(id):
         conn.commit()
     return '', 204
 
-# Initialize the database (implementar esta función según sea necesario)
-def init_db():
-    with closing(get_db_connection()) as conn:
-        # Aquí puedes crear las tablas si no existen
-        conn.execute('''
-            CREATE TABLE IF NOT EXISTS usuarios (
-                id TEXT PRIMARY KEY,
-                nome TEXT NOT NULL
-            )
-        ''')
-        conn.execute('''
-            CREATE TABLE IF NOT EXISTS cotacoes (
-                id TEXT PRIMARY KEY,
-                valor REAL NOT NULL
-            )
-        ''')
-        conn.commit()
-
 # Start the server with HTTPS
 if __name__ == '__main__':
     init_db()  # Initialize the database
     context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
     context.load_cert_chain('/home/FF/CotaGO/cert.pem', '/home/FF/CotaGO/key.pem')
     app.run(host='0.0.0.0', port=3000, ssl_context=context)
+# Adicione logs para verificar quem está fazendo a requisição
+@app.before_request
+def log_request_info():
+    app.logger.debug(f'Request Path: {request.path}')
+    app.logger.debug(f'Request Method: {request.method}')
+    app.logger.debug(f'Request Headers: {request.headers}')
+    app.logger.debug(f'Request Body: {request.get_data(as_text=True)}')
