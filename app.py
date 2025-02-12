@@ -65,17 +65,11 @@ def _page():
     if request.method == 'POST':
         # Log the incoming request headers
         app.logger.debug(f'Request Headers: {request.headers}')  
-        
-        if request.content_type != 'application/json':
-            return jsonify({'error': 'Content-Type deve ser application/json'}), 415
 
         # Handle user login
-        data = request.get_json()
         user = User.query.filter_by(email=data['email']).first()
         if user and user.check_password(data['password']):
             login_user(user)
-            return jsonify(message='Login bem-sucedido', redirect_url='/home'), 200  # URL de redirecionamento
-        return jsonify(message='Credenciais inválidas'), 401
 
     else:
         # Render the login page

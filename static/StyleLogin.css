@@ -2,8 +2,17 @@ body {
     background-color: black;
     padding: 0, 10px;
     margin: 0 auto;
-    align-items: center;
-    justify-content: center;
+    display: flex;
+}
+.contaner_img {
+    padding: 10px;
+    width: 100%;
+    height: 100vh;
+}
+.container_form {
+    padding: 10px;
+    margin: 0 auto;
+    width: 100%;
 }
 form {
     padding: 0;

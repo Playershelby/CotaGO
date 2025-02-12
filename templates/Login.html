@@ -7,13 +7,18 @@
     <title>Login</title>
 </head>
 <body>
-    <form action="/" method="POST">
-        Email: <input type=" text" name="email"><br>
-        Senha: <input type="password" name="password">
-        <input type="submit">
-    </form>
-    <form action="{{ url_for('cadastro_page') }}" method="get">
-        <button type="submit">Cadastrar</button> 
+    <div class="contaner_img">
+        <img src="" alt="Logo" width="500px" height="500px">
+    </div>
+    <div class="container_form">
+        <form action="/" method="POST">
+            Email: <input type=" text" name="email"><br>
+            Senha: <input type="password" name="password">
+            <input type="submit">
+        </form>
+        <form action="{{ url_for('cadastro_page') }}" method="get">
+            <button type="submit">Cadastrar</button> 
+    </div>
 </body>
 <script type="module" src="/main.js"></script>
 </html>
